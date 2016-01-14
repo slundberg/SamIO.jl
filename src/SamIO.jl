@@ -1,5 +1,7 @@
 module SamIO
 
-# package code goes here
+include("ReferenceContigs.jl")
+include("BamReader.jl")
+include("BinningMap.jl")
 
 end # module
