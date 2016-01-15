@@ -2,16 +2,15 @@ import Base: eof, close
 export BinningMap, close, value, position, eof, advance!
 
 type BinningMap
-    reader::BamReader
+    reader::SequenceReader
     binSize::Int64
     position::Int64
     value::Float64
     skipDup::Bool
 end
 
-function BinningMap(reader::BamReader, binSize; skipDup=true)
+function BinningMap(reader::SequenceReader, binSize; skipDup=true)
     fm = BinningMap(reader, binSize, 0, 0.0, skipDup)
-
     advance!(fm)
     fm
 end

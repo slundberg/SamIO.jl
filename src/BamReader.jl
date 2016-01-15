@@ -3,7 +3,7 @@ using GZip
 import Base: eof, close, position
 export BamReader, close, value, eof, advance!, eachposition
 
-type BamReader
+type BamReader <: SequenceReader
     bamStream
     readOrientation #useReverseReads::Bool
     done::Bool

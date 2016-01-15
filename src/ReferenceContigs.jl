@@ -1,14 +1,25 @@
-export ReferenceContigs, ReferenceContigs_hg38
+using Memoize
+
+export ReferenceContigs, ReferenceContigs_hg38, contig_offset
 
 type ReferenceContigs
     count::Int64
     names::Array{ASCIIString}
     sizes::Array{Int64}
     offsets::Array{Int64}
+    nameIndexes::Dict{ASCIIString,Int64}
 
     function ReferenceContigs(count, names, sizes)
-        new(count, names, sizes, [sum(sizes[1:i-1]) for i in 1:length(sizes)])
+        nameIndexes = Dict{ASCIIString,Int64}()
+        for i in 1:length(names)
+            nameIndexes[names[i]] = i
+        end
+        new(count, names, sizes, [sum(sizes[1:i-1]) for i in 1:length(sizes)], nameIndexes)
     end
+end
+
+function contig_offset(contigs::ReferenceContigs, contig::AbstractString)
+    contigs.offsets[contigs.nameIndexes[contig]]
 end
 
 ReferenceContigs_hg38 = ReferenceContigs(455, [
