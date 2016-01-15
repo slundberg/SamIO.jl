@@ -35,7 +35,7 @@ close(reader)
 
 ## BedReader
 
-# test forward reads
+# test first few positions
 reader = BedReader("data/small.bed", ReferenceContigs_hg38)
 @test position(reader) == 1001
 advance!(reader)
@@ -44,8 +44,9 @@ advance!(reader)
 @test position(reader) == 5001
 close(reader)
 
-# test reading through a whole file
-reader = BedReader("data/small.bed", ReferenceContigs_hg38)
+# test reading through a whole file as a stream
+f = open("data/small.bed")
+reader = BedReader(f, ReferenceContigs_hg38)
 lastPos = -1
 while !eof(reader)
 	lastPos = position(reader)
