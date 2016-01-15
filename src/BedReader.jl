@@ -17,7 +17,7 @@ function BedReader(bedFileName::ASCIIString, contigs)
     advance!(r)
     r
 end
-function BedReader(f::IOStream, contigs)
+function BedReader(f::IO, contigs)
     r = BedReader(f, false, 0, 0, 0, 0, contigs)
     advance!(r)
     r
