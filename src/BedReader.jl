@@ -30,7 +30,7 @@ eof(reader::BedReader) = reader.position == -1
 function advance!(r::BedReader)
 
     while !r.done
-        if eof(r.bedStream)
+        if peek(r.bedStream) == -1 # eof does not work on .gz files (gzip issue?)
             r.done = true
             r.position = -1
             return

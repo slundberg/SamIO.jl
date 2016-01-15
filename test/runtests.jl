@@ -1,5 +1,6 @@
 using SamIO
 using Base.Test
+using GZip
 
 ## BamReader
 
@@ -50,6 +51,18 @@ reader = BedReader(f, ReferenceContigs_hg38)
 lastPos = -1
 while !eof(reader)
 	lastPos = position(reader)
+	println(lastPos)
+	advance!(reader)
+end
+close(reader)
+
+# test reading through a whole file as a zipped stream
+f = GZip.open("data/small.bed.gz")
+reader = BedReader(f, ReferenceContigs_hg38)
+lastPos = -1
+while !eof(reader)
+	lastPos = position(reader)
+
 	advance!(reader)
 end
 close(reader)
