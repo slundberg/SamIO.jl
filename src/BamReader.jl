@@ -9,6 +9,7 @@ type BamReader <: SequenceReader
     done::Bool
     position::Int64
     contigs::ReferenceContigs
+    contigsIndexMap::Array{Int64,1}
 end
 
 function BamReader(bamFileName::ASCIIString, readOrientation, contigs)
@@ -19,21 +20,30 @@ function BamReader(bamFileName::ASCIIString, readOrientation, contigs)
     @assert code == b"BAM\1"
 
     # get through the header data
+    contigsIndexMap = Int64[]
     l_text = read(f, Int32)
     skip(f, l_text)
 
     # make sure the contigs match our reference
+    contigsIndexMap = Int64[]
+    numFound = 0
     n_ref = read(f, Int32)
-    @assert n_ref == contigs.count
+    #@assert n_ref == contigs.count
     for j in 1:n_ref
         l_name = read(f, Int32)
         refName = convert(ASCIIString, read(f, UInt8, l_name)[1:end-1]) # ignore the null terminator
         l_ref = read(f, Int32)
-        @assert l_ref == contigs.sizes[j]
-        @assert refName == contigs.names[j]
+        foundInd = findfirst(contigs.names, refName)
+        push!(contigsIndexMap, foundInd)
+        if foundInd > 0
+            numFound += 1
+            @assert contigs.sizes[contigsIndexMap[end]] == l_ref "A reference contig size doesn't match the BAM file contig!"
+        end
     end
+    @assert numFound > 0 "No BAM contigs matched the reference contigs!"
 
-    r = BamReader(f, readOrientation, false, 1, contigs)
+
+    r = BamReader(f, readOrientation, false, 1, contigs, contigsIndexMap)
     advance!(r)
     r
 end
@@ -57,15 +67,15 @@ function advance!(r::BamReader)
         refID = buf[2] + 1 # the reference contig this read maps to
 
         # get the read position
-        if refID != 0
-            r.position = buf[3] + r.contigs.offsets[refID] + 1; # convert to 1 based indexing
+        if refID != 0 && r.contigsIndexMap[refID] != 0
+            r.position = buf[3] + r.contigs.offsets[r.contigsIndexMap[refID]] + 1; # convert to 1 based indexing
         end
 
         forward = (buf[5] & 1048576) == 0 # see if we are reverse complemented
         skip(f, block_size-16) # skip the rest of the entry
 
         # break if we found a read in the right direction
-        if refID != 0 && (r.readOrientation == :any || (forward && r.readOrientation == :forward) || (!forward && r.readOrientation == :reverse))
+        if refID != 0 && r.contigsIndexMap[refID] != 0 && (r.readOrientation == :any || (forward && r.readOrientation == :forward) || (!forward && r.readOrientation == :reverse))
             return
         end
     end

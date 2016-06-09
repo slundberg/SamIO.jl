@@ -1,6 +1,6 @@
 using Memoize
 
-export ReferenceContigs, ReferenceContigs_hg38, contig_offset
+export ReferenceContigs, contig_offset
 
 type ReferenceContigs
     count::Int64
@@ -9,12 +9,13 @@ type ReferenceContigs
     offsets::Array{Int64}
     nameIndexes::Dict{ASCIIString,Int64}
 
-    function ReferenceContigs(count, names, sizes)
+    function ReferenceContigs(names, sizes)
+        @assert length(names) == length(sizes)
         nameIndexes = Dict{ASCIIString,Int64}()
         for i in 1:length(names)
             nameIndexes[names[i]] = i
         end
-        new(count, names, sizes, [sum(sizes[1:i-1]) for i in 1:length(sizes)], nameIndexes)
+        new(length(sizes), names, sizes, [sum(sizes[1:i-1]) for i in 1:length(sizes)], nameIndexes)
     end
 end
 
@@ -22,7 +23,8 @@ function contig_offset(contigs::ReferenceContigs, contig::AbstractString)
     contigs.offsets[contigs.nameIndexes[contig]]
 end
 
-ReferenceContigs_hg38 = ReferenceContigs(455, [
+assembly = Dict{ASCIIString,ReferenceContigs}()
+assembly["GRCh38_alt"] = ReferenceContigs([
     "chr1", "chr10", "chr11", "chr11_KI270721v1_random", "chr12", "chr13", "chr14", "chr14_GL000009v2_random",
     "chr14_GL000225v1_random", "chr14_KI270722v1_random", "chr14_GL000194v1_random", "chr14_KI270723v1_random",
     "chr14_KI270724v1_random", "chr14_KI270725v1_random", "chr14_KI270726v1_random", "chr15", "chr15_KI270727v1_random",
@@ -147,3 +149,107 @@ ReferenceContigs_hg38 = ReferenceContigs(455, [
     198735,93321,158759,148850,150742,27745,62944,40191,36723,79590,71251,137718,186739,
     176608,161147,156040895,57227415,37240
 ]);
+
+assembly["GRCh38"] = ReferenceContigs([
+    "chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12",
+    "chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX",
+    "chrY","chrM","chr1_KI270706v1_random","chr1_KI270707v1_random","chr1_KI270708v1_random",
+    "chr1_KI270709v1_random","chr1_KI270710v1_random","chr1_KI270711v1_random","chr1_KI270712v1_random",
+    "chr1_KI270713v1_random","chr1_KI270714v1_random","chr2_KI270715v1_random","chr2_KI270716v1_random",
+    "chr3_GL000221v1_random","chr4_GL000008v2_random","chr5_GL000208v1_random","chr9_KI270717v1_random",
+    "chr9_KI270718v1_random","chr9_KI270719v1_random","chr9_KI270720v1_random","chr11_KI270721v1_random",
+    "chr14_GL000009v2_random","chr14_GL000225v1_random","chr14_KI270722v1_random","chr14_GL000194v1_random",
+    "chr14_KI270723v1_random","chr14_KI270724v1_random","chr14_KI270725v1_random","chr14_KI270726v1_random",
+    "chr15_KI270727v1_random","chr16_KI270728v1_random","chr17_GL000205v2_random","chr17_KI270729v1_random",
+    "chr17_KI270730v1_random","chr22_KI270731v1_random","chr22_KI270732v1_random","chr22_KI270733v1_random",
+    "chr22_KI270734v1_random","chr22_KI270735v1_random","chr22_KI270736v1_random","chr22_KI270737v1_random",
+    "chr22_KI270738v1_random","chr22_KI270739v1_random","chrY_KI270740v1_random","chrUn_KI270302v1",
+    "chrUn_KI270304v1","chrUn_KI270303v1","chrUn_KI270305v1","chrUn_KI270322v1","chrUn_KI270320v1","chrUn_KI270310v1",
+    "chrUn_KI270316v1","chrUn_KI270315v1","chrUn_KI270312v1","chrUn_KI270311v1","chrUn_KI270317v1","chrUn_KI270412v1",
+    "chrUn_KI270411v1","chrUn_KI270414v1","chrUn_KI270419v1","chrUn_KI270418v1","chrUn_KI270420v1","chrUn_KI270424v1",
+    "chrUn_KI270417v1","chrUn_KI270422v1","chrUn_KI270423v1","chrUn_KI270425v1","chrUn_KI270429v1","chrUn_KI270442v1",
+    "chrUn_KI270466v1","chrUn_KI270465v1","chrUn_KI270467v1","chrUn_KI270435v1","chrUn_KI270438v1","chrUn_KI270468v1",
+    "chrUn_KI270510v1","chrUn_KI270509v1","chrUn_KI270518v1","chrUn_KI270508v1","chrUn_KI270516v1","chrUn_KI270512v1",
+    "chrUn_KI270519v1","chrUn_KI270522v1","chrUn_KI270511v1","chrUn_KI270515v1","chrUn_KI270507v1","chrUn_KI270517v1",
+    "chrUn_KI270529v1","chrUn_KI270528v1","chrUn_KI270530v1","chrUn_KI270539v1","chrUn_KI270538v1","chrUn_KI270544v1",
+    "chrUn_KI270548v1","chrUn_KI270583v1","chrUn_KI270587v1","chrUn_KI270580v1","chrUn_KI270581v1","chrUn_KI270579v1",
+    "chrUn_KI270589v1","chrUn_KI270590v1","chrUn_KI270584v1","chrUn_KI270582v1","chrUn_KI270588v1","chrUn_KI270593v1",
+    "chrUn_KI270591v1","chrUn_KI270330v1","chrUn_KI270329v1","chrUn_KI270334v1","chrUn_KI270333v1","chrUn_KI270335v1",
+    "chrUn_KI270338v1","chrUn_KI270340v1","chrUn_KI270336v1","chrUn_KI270337v1","chrUn_KI270363v1","chrUn_KI270364v1",
+    "chrUn_KI270362v1","chrUn_KI270366v1","chrUn_KI270378v1","chrUn_KI270379v1","chrUn_KI270389v1","chrUn_KI270390v1",
+    "chrUn_KI270387v1","chrUn_KI270395v1","chrUn_KI270396v1","chrUn_KI270388v1","chrUn_KI270394v1","chrUn_KI270386v1",
+    "chrUn_KI270391v1","chrUn_KI270383v1","chrUn_KI270393v1","chrUn_KI270384v1","chrUn_KI270392v1","chrUn_KI270381v1",
+    "chrUn_KI270385v1","chrUn_KI270382v1","chrUn_KI270376v1","chrUn_KI270374v1","chrUn_KI270372v1","chrUn_KI270373v1",
+    "chrUn_KI270375v1","chrUn_KI270371v1","chrUn_KI270448v1","chrUn_KI270521v1","chrUn_GL000195v1","chrUn_GL000219v1",
+    "chrUn_GL000220v1","chrUn_GL000224v1","chrUn_KI270741v1","chrUn_GL000226v1","chrUn_GL000213v1","chrUn_KI270743v1",
+    "chrUn_KI270744v1","chrUn_KI270745v1","chrUn_KI270746v1","chrUn_KI270747v1","chrUn_KI270748v1","chrUn_KI270749v1",
+    "chrUn_KI270750v1","chrUn_KI270751v1","chrUn_KI270752v1","chrUn_KI270753v1","chrUn_KI270754v1","chrUn_KI270755v1",
+    "chrUn_KI270756v1","chrUn_KI270757v1","chrUn_GL000214v1","chrUn_KI270742v1","chrUn_GL000216v2","chrUn_GL000218v1",
+    "chrEBV"
+],[
+    248956422,242193529,198295559,190214555,181538259,170805979,159345973,145138636,
+    138394717,133797422,135086622,133275309,114364328,107043718,101991189,90338345,
+    83257441,80373285,58617616,64444167,46709983,50818468,156040895,57227415,16569,
+    175055,32032,127682,66860,40176,42210,176043,40745,41717,161471,153799,155397,
+    209709,92689,40062,38054,176845,39050,100316,201709,211173,194050,191469,38115,
+    39555,172810,43739,448248,1872759,185591,280839,112551,150754,41543,179772,165050,
+    42811,181920,103838,99375,73985,37240,2274,2165,1942,1472,21476,4416,1201,1444,2276,
+    998,12399,37690,1179,2646,2489,1029,2145,2321,2140,2043,1445,981,1884,1361,392061,1233,
+    1774,3920,92983,112505,4055,2415,2318,2186,1951,1300,22689,138126,5674,8127,6361,5353,
+    3253,1899,2983,2168,993,91309,1202,1599,1400,2969,1553,7046,31033,44474,4685,4513,6504,
+    6158,3041,5796,1652,1040,1368,2699,1048,1428,1428,1026,1121,1803,2855,3530,8320,1048,
+    1045,1298,2387,1537,1143,1880,1216,970,1788,1484,1750,1308,1658,971,1930,990,4215,1136,
+    2656,1650,1451,2378,2805,7992,7642,182896,179198,161802,179693,157432,15008,164239,210658,
+    168472,41891,66486,198735,93321,158759,148850,150742,27745,62944,40191,36723,79590,71251,
+    137718,186739,176608,161147,171823
+])
+
+assembly["hg19"] = ReferenceContigs([
+    "chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10",
+    "chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19",
+    "chr20","chr21","chr22","chrX","chrM"
+],[
+    249250621,243199373,198022430,191154276,180915260,171115067,159138663,146364022,
+    141213431,135534747,135006516,133851895,115169878,107349540,102531392,90354753,
+    81195210,78077248,59128983,63025520,48129895,51304566,155270560,16571
+])
+
+assembly["mm10-minimal"] = ReferenceContigs([
+    "chr10","chr11","chr12","chr13","chr14","chr15","chr16",
+    "chr17","chr18","chr19","chr1","chr2","chr3","chr4",
+    "chr5","chr6","chr7","chr8","chr9","chrM","chrX","chrY"
+],[
+    130694993,122082543,120129022,120421639,124902244,104043685,98207768,94987271,
+    90702639,61431566,195471971,182113224,160039680,156508116,151834684,149736546,
+    145441459,129401213,124595110,16299,171031299,91744698
+])
+
+assembly["mm10"] = ReferenceContigs([
+    "chr1","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19",
+    "chr1_GL456210_random","chr1_GL456211_random","chr1_GL456212_random","chr1_GL456213_random",
+    "chr1_GL456221_random","chr2","chr3","chr4","chr4_GL456216_random","chr4_GL456350_random",
+    "chr4_JH584292_random","chr4_JH584293_random","chr4_JH584294_random","chr4_JH584295_random",
+    "chr5","chr5_GL456354_random","chr5_JH584296_random","chr5_JH584297_random","chr5_JH584298_random",
+    "chr5_JH584299_random","chr6","chr7","chr7_GL456219_random","chr8","chr9","chrM","chrUn_GL456239",
+    "chrUn_GL456359","chrUn_GL456360","chrUn_GL456366","chrUn_GL456367","chrUn_GL456368","chrUn_GL456370",
+    "chrUn_GL456372","chrUn_GL456378","chrUn_GL456379","chrUn_GL456381","chrUn_GL456382","chrUn_GL456383",
+    "chrUn_GL456385","chrUn_GL456387","chrUn_GL456389","chrUn_GL456390","chrUn_GL456392","chrUn_GL456393",
+    "chrUn_GL456394","chrUn_GL456396","chrUn_JH584304","chrX","chrX_GL456233_random","chrY","chrY_JH584300_random",
+    "chrY_JH584301_random","chrY_JH584302_random","chrY_JH584303_random"
+],[
+    195471971,130694993,122082543,120129022,120421639,124902244,104043685,98207768,94987271,
+    90702639,61431566,169725,241735,153618,39340,206961,182113224,160039680,156508116,66673,
+    227966,14945,207968,191905,1976,151834684,195993,199368,205776,184189,953012,149736546,
+    145441459,175968,129401213,124595110,16299,40056,22974,31704,47073,42057,20208,26764,
+    28664,31602,72385,25871,23158,38659,35240,24685,28772,24668,23629,55711,24323,21240,
+    114452,171031299,336933,91744698,182347,259875,155838,158099
+])
+
+assembly["mm9"] = ReferenceContigs([
+    "chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11",
+    "chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chrX","chrY"
+],[
+    197195432,181748087,159599783,155630120,152537259,149517037,152524553,131738871,
+    124076172,129993255,121843856,121257530,120284312,125194864,103494974,98319150,
+    95272651,90772031,61342430,166650296,15902555
+])
